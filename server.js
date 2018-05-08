@@ -27,13 +27,13 @@ app.get("/", function (req, res) {
     db.Article.find({})
         .then(function (dbArticle) {
             // If all Notes are successfully found, send them back to the client
-            res.render("home", {article: dbArticle});
+            res.render("home", { article: dbArticle });
         })
         .catch(function (err) {
             // If an error occurs, send the error back to the client
             res.json(err);
         });
-    
+
 });
 
 app.post("/scraper", function (req, res) {
@@ -48,7 +48,7 @@ app.post("/scraper", function (req, res) {
                 .text();
             result.link = $(this)
                 .children("a")
-                 .attr("href");
+                .attr("href");
 
             console.log(result);
             db.Article.create(result)
@@ -59,7 +59,7 @@ app.post("/scraper", function (req, res) {
                     return res.json(err);
                 });
         })
-        res.refresh();
+        res.end();
     });
 });
 
@@ -69,13 +69,25 @@ app.get("/articles", function (req, res) {
     db.Article.find({})
         .then(function (dbArticle) {
             // If all Notes are successfully found, send them back to the client
-            res.render("home", {article: dbArticle});
+            res.render("home", { article: dbArticle });
         })
         .catch(function (err) {
             // If an error occurs, send the error back to the client
             res.json(err);
         });
 });
+
+app.post("/articles/:id", function (req, res) {
+    if (req.params.id === "removeall") {
+        db.Article.remove().then(function () {
+            res.end();
+        })
+    } else {
+        db.Article.remove({ "_id": req.params.id }).then(function () {
+            res.end();
+        })
+    }
+})
 
 app.listen(PORT, function () {
     console.log("App running on port " + PORT + "!");
