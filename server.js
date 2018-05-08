@@ -26,11 +26,9 @@ mongoose.connect(MONGODB_URI);
 app.get("/", function (req, res) {
     db.Article.find({})
         .then(function (dbArticle) {
-            // If all Notes are successfully found, send them back to the client
             res.render("home", { article: dbArticle });
         })
         .catch(function (err) {
-            // If an error occurs, send the error back to the client
             res.json(err);
         });
 
@@ -65,17 +63,25 @@ app.post("/scraper", function (req, res) {
 
 
 app.get("/articles", function (req, res) {
-    // TODO: Finish the route so it grabs all of the articles
     db.Article.find({})
         .then(function (dbArticle) {
-            // If all Notes are successfully found, send them back to the client
             res.render("home", { article: dbArticle });
         })
         .catch(function (err) {
-            // If an error occurs, send the error back to the client
             res.json(err);
         });
 });
+
+app.get("/articlesnotes/:id", function(req, res) {
+    db.Article.findOne({ _id: req.params.id })
+      .populate("note")
+      .then(function(dbArticle) {
+        res.json(dbArticle);
+      })
+      .catch(function(err) {
+        res.json(err);
+      });
+  });
 
 app.post("/articles/:id", function (req, res) {
     if (req.params.id === "removeall") {
@@ -88,6 +94,18 @@ app.post("/articles/:id", function (req, res) {
         })
     }
 })
+app.post("/notes/:id", function(req, res) {
+    db.Note.create(req.body)
+      .then(function(dbNote) {
+        return db.Article.findOneAndUpdate({ _id: req.params.id }, { note: dbNote._id }, { new: true });
+      })
+      .then(function(dbArticle) {
+        res.json(dbArticle);
+      })
+      .catch(function(err) {
+        res.json(err);
+      });
+  });
 
 app.listen(PORT, function () {
     console.log("App running on port " + PORT + "!");
